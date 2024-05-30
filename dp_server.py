@@ -1,6 +1,7 @@
 import flwr as fl
 import utils
 from sklearn.linear_model import LogisticRegression
+from flwr.server.strategy import DifferentialPrivacyClientSideFixedClipping
 
 def evaluate_config(server_round: int):
     """Return evaluation configuration dict for each round.
@@ -16,11 +17,18 @@ if __name__ == "__main__":
     model = LogisticRegression()
     utils.set_initial_params(model, n_classes=3, n_features=37)
     strategy = fl.server.strategy.FedAvg(
-        min_available_clients=3,
+        min_available_clients=2,
         fit_metrics_aggregation_fn=utils.weighted_average,
         evaluate_metrics_aggregation_fn=utils.weighted_average,
         on_evaluate_config_fn=evaluate_config,
     )
+    strategy = DifferentialPrivacyClientSideFixedClipping(
+        strategy,
+        noise_multiplier = 0.5,
+        clipping_norm = 10,
+        num_sampled_clients = 2,
+    )
+
     fl.server.start_server(
         server_address="0.0.0.0:8080",
         strategy=strategy,
