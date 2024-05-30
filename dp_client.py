@@ -1,5 +1,6 @@
 import argparse
 import warnings
+from flwr.client.mod import fixedclipping_mod
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import log_loss
 from sklearn.model_selection import train_test_split
@@ -100,7 +101,16 @@ if __name__ == "__main__":
                 "f1": f1,
             }
             return loss, len(X_test), output_dict
-
+    def client_fn(cid: str):
+    
+        return GuardianClient().to_client()
+        
+    app = fl.client.ClientApp(
+    client_fn=client_fn,
+    mods=[
+        fixedclipping_mod,
+    ]
+    )
 
     # Start Flower client
     fl.client.start_client(

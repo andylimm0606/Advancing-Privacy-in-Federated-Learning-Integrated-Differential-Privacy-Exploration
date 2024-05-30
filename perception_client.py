@@ -1,14 +1,16 @@
 import argparse
 import warnings
+
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import log_loss
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score, recall_score, precision_score, f1_score
-import numpy as np
-import tensorflow as tf
+from sklearn.linear_model import Perceptron
+
+
+
 import flwr as fl
 import pandas as pd
-import utils
+import perc_utils as utils
 
 
 if __name__ == "__main__":
@@ -47,21 +49,9 @@ if __name__ == "__main__":
     # X_train, X_test = X[: int(0.8 * len(X))], X[int(0.8 * len(X)) :]
     # y_train, y_test = y[: int(0.8 * len(y))], y[int(0.8 * len(y)) :]
 
-    # Create LogisticRegression Model
-    model = LogisticRegression(
-        penalty="l2",
-        max_iter=1,  # local epoch
-        warm_start=True,  # prevent refreshing weights when fitting
-    )
+    
 
-    def eval_learning(y_test, y_pred):
-        acc = accuracy_score(y_test, y_pred)
-        rec = recall_score(
-            y_test, y_pred, average="micro"
-        )  # average argument required for multi-class
-        prec = precision_score(y_test, y_pred, average="micro")
-        f1 = f1_score(y_test, y_pred, average="micro")
-        return acc, rec, prec, f1
+    model = Perceptron(max_iter=100, eta0=0.1, random_state=42) 
 
     # Setting initial parameters, akin to model.compile for keras models
     utils.set_initial_params(model, n_features=X_train.shape[1], n_classes=3)
@@ -86,21 +76,9 @@ if __name__ == "__main__":
 
         def evaluate(self, parameters, config):  # type: ignore
             utils.set_model_params(model, parameters)
-            loss = log_loss(y_test, model.predict_proba(X_test))
+            loss = log_loss(y_test, model.predict(X_test))
             accuracy = model.score(X_test, y_test)
-            #return loss, len(X_test), {"accuracy": accuracy}
-            y_pred = model.predict(X_test)
-            #y_pred = np.argmax(y_pred, axis=1).reshape(-1, 1)
-            acc, rec, prec, f1 = eval_learning(y_test, y_pred)
-            output_dict = {
-                "accuracy": accuracy,  # accuracy from tensorflow model.evaluate
-                "acc": acc,
-                "rec": rec,
-                "prec": prec,
-                "f1": f1,
-            }
-            return loss, len(X_test), output_dict
-
+            return loss, len(X_test), {"test_accuracy": accuracy}
 
     # Start Flower client
     fl.client.start_client(
