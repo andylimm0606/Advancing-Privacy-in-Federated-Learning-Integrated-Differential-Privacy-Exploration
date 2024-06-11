@@ -2,14 +2,11 @@ from typing import List, Tuple, Dict
 
 import numpy as np
 from sklearn.linear_model import Perceptron
-from sklearn.model_selection import train_test_split 
-from sklearn.metrics import accuracy_score, classification_report 
-from sklearn import svm
 
 from flwr.common import NDArrays, Metrics, Scalar
 
 
-def get_model_parameters(model) -> NDArrays:
+def get_model_parameters(model: Perceptron) -> NDArrays:
     """Return the parameters of a sklearn LogisticRegression model."""
     if model.fit_intercept:
         params = [
@@ -22,7 +19,7 @@ def get_model_parameters(model) -> NDArrays:
         ]
     return params
 
-def set_model_params(model, params: NDArrays) -> Perceptron:
+def set_model_params(model: Perceptron, params: NDArrays) -> Perceptron:
     """Set the parameters of a sklean LogisticRegression model."""
     model.coef_ = params[0]
     if model.fit_intercept:
@@ -30,7 +27,7 @@ def set_model_params(model, params: NDArrays) -> Perceptron:
     return model
 
 
-def set_initial_params(model, n_classes: int, n_features: int):
+def set_initial_params(model: Perceptron, n_classes: int, n_features: int):
     """Set initial parameters as zeros.
 
     Required since model params are uninitialized until model.fit is called but server
@@ -75,26 +72,7 @@ def weighted_average(metrics: List[Tuple[int, Metrics]]) -> Dict[str, Scalar]:
 
     return weighted_metrics
 
-def perceptronUse(data: NDArrays):
-    split = data.size
-    X, y = data.data[:split, :], data.target[:split] 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42) 
-    
-    #Making a perceptron classifier 
-    perceptron = Perceptron(max_iter=100, eta0=0.1, random_state=42) 
-    perceptron.fit(X_train, y_train) 
 
-        
-    #Making prediction on test data 
-    y_pred = perceptron.predict(X_test) 
-    #Finding accuracy 
-    accuracy = accuracy_score(y_test, y_pred) 
-    print(f'Accuracy: {accuracy}') 
-    
-    # Generate a classification report 
-    class_report = classification_report(y_test, y_pred) 
-    print("Classification Report:\n", class_report) 
-    return 1
 
 # def load_admit():
 #     """

@@ -2,8 +2,6 @@ import argparse
 import warnings
 
 from flwr.client.mod import fixedclipping_mod
-
-from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import log_loss
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import Perceptron
@@ -17,7 +15,7 @@ import perc_utils as utils
 
 
 if __name__ == "__main__":
-    N_CLIENTS = 3
+    N_CLIENTS = 5
 
     parser = argparse.ArgumentParser(description="Flower")
     parser.add_argument(
@@ -38,8 +36,8 @@ if __name__ == "__main__":
     # Split into training set 80% and test set 20%
     X_train, X_test, y_train, y_test = train_test_split(features, 
                                                     HOSP_MORT, 
-                                                    test_size = .20, 
-                                                    random_state = 0)
+                                                    test_size = .40, 
+                                                    random_state = 42)
 
     # # Load the partition data
     # fds = FederatedDataset(dataset="hitorilabs/iris", partitioners={"train": N_CLIENTS})
@@ -54,19 +52,22 @@ if __name__ == "__main__":
 
     
 
-    model = Perceptron(max_iter=100, eta0=0.1, random_state=42) 
+    model = Perceptron(penalty="l2",
+        max_iter=1000,  # local epoch
+        warm_start=True,  # prevent refreshing weights when fitting
+        ) 
 
     def eval_learning(y_test, y_pred):
         acc = accuracy_score(y_test, y_pred)
         rec = recall_score(
-            y_test, y_pred, average="micro"
+            y_test, y_pred, average="weighted"
         )  # average argument required for multi-class
-        prec = precision_score(y_test, y_pred, average="micro")
-        f1 = f1_score(y_test, y_pred, average="micro")
+        prec = precision_score(y_test, y_pred, average="weighted", zero_division=0)
+        f1 = f1_score(y_test, y_pred, average="weighted", zero_division=0)
         return acc, rec, prec, f1
     
     # Setting initial parameters, akin to model.compile for keras models
-    utils.set_initial_params(model, n_features=X_train.shape[1], n_classes=3)
+    utils.set_initial_params(model, n_features=X_train.shape[1], n_classes=1)
 
     # Define Flower client
     class GuardianClient(fl.client.NumPyClient):
@@ -95,6 +96,7 @@ if __name__ == "__main__":
             #y_pred = np.argmax(y_pred, axis=1).reshape(-1, 1)
             acc, rec, prec, f1 = eval_learning(y_test, y_pred)
             output_dict = {
+                "loss": loss,
                 "accuracy": accuracy,  # accuracy from tensorflow model.evaluate
                 "acc": acc,
                 "rec": rec,

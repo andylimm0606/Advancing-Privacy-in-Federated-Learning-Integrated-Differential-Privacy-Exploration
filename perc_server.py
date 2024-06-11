@@ -16,7 +16,7 @@ if __name__ == "__main__":
     model = Perceptron()
     utils.set_initial_params(model, n_classes=3, n_features=37)
     strategy = fl.server.strategy.FedAvg(
-        min_available_clients=3,
+        min_available_clients=5,
         fit_metrics_aggregation_fn=utils.weighted_average,
         evaluate_metrics_aggregation_fn=utils.weighted_average,
         on_evaluate_config_fn=evaluate_config,

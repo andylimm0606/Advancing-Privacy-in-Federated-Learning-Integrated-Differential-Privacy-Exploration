@@ -16,9 +16,9 @@ def evaluate_config(server_round: int):
 # Start Flower server for five rounds of federated learning
 if __name__ == "__main__":
     model = Perceptron()
-    utils.set_initial_params(model, n_classes=3, n_features=37)
+    utils.set_initial_params(model, n_classes=1, n_features=37)
     strategy = fl.server.strategy.FedAvg(
-        min_available_clients=3,
+        min_available_clients=5,
         fit_metrics_aggregation_fn=utils.weighted_average,
         evaluate_metrics_aggregation_fn=utils.weighted_average,
         on_evaluate_config_fn=evaluate_config,
@@ -27,7 +27,7 @@ if __name__ == "__main__":
         strategy,
         noise_multiplier = 0.5,
         clipping_norm = 10,
-        num_sampled_clients = 2,
+        num_sampled_clients = 5,
     )
 
     fl.server.start_server(
