@@ -107,7 +107,7 @@ if __name__ == "__main__":
     local_dp_obj = LocalDpMod(
         clipping_norm=10,
         sensitivity=1, 
-        epsilon=0.5,
+        epsilon=0.3,
         delta= 0
         )
     def client_fn(cid: str):

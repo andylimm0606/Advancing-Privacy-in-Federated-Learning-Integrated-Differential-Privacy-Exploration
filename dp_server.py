@@ -24,7 +24,7 @@ if __name__ == "__main__":
     )
     strategy = DifferentialPrivacyClientSideFixedClipping(
         strategy,
-        noise_multiplier = 0.2,
+        noise_multiplier = 1,
         clipping_norm = 10,
         num_sampled_clients = 5,
     )
