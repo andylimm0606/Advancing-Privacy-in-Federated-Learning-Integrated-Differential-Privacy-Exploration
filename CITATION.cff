@@ -1,0 +1,6 @@
+cff-version: 1.2.0
+message: "If you use this repository, please cite it as below."
+authors:
+  - given-names: Darren Hartono, Andy Lim, Kaveh Ghalambor
+title: "Advancing-Privacy-in-Federated-Learning-Integrated-Differential-Privacy-Exploration"
+date-released: 2024-06-12
